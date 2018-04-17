@@ -1,6 +1,8 @@
 
 #include "DoorOpener.h"
 #include "GameFramework/Actor.h"
+#include "Engine/TriggerVolume.h"
+#include "Engine/World.h"
 
 
 UDoorOpener::UDoorOpener()
@@ -15,6 +17,7 @@ void UDoorOpener::BeginPlay()
 	Super::BeginPlay();
 
 	m_pOwner = GetOwner();
+	m_pActorAbleToOpenDoor = GetWorld()->GetFirstPlayerController()->GetPawn();
 	m_fInitialYaw = m_pOwner->GetActorRotation().Yaw;
 }
 
@@ -22,30 +25,39 @@ void UDoorOpener::TickComponent(float fDeltaTime, ELevelTick eTickType, FActorCo
 {
 	Super::TickComponent(fDeltaTime, eTickType, pThisTickFunction);
 
-	FRotator tRotator = m_pOwner->GetActorRotation();
-
-	float fFrameRotation = m_fRotationPerSecond * fDeltaTime;
-
-	if (!m_bOpened)
-	{
-		m_fCurrentLocalRotation += fFrameRotation;
-		if (m_fCurrentLocalRotation >= 90.0f)
-		{
-			m_fCurrentLocalRotation = 90.0f;
-			m_bOpened = true;
-		}
-	}
+	if (m_pPressurePlate->IsOverlappingActor(m_pActorAbleToOpenDoor))
+		OpenDoor(fDeltaTime);
 	else
+		CloseDoor(fDeltaTime);
+}
+
+void UDoorOpener::OpenDoor(float fDeltaTime)
+{
+	if (m_fCurrentLocalRotation >= 90.0f)
 	{
-		m_fCurrentLocalRotation -= fFrameRotation;
-		if (m_fCurrentLocalRotation <= 0.0f)
-		{
-			m_fCurrentLocalRotation = 0.0f;
-			m_bOpened = false;
-		}
+		m_fCurrentLocalRotation = 90.0f;
+		return;
 	}
 
-	tRotator.Yaw = m_fInitialYaw - m_fCurrentLocalRotation;
+	m_fCurrentLocalRotation += m_fRotationPerSecond * fDeltaTime;
+	ApplyNewRotation();
+}
 
+void UDoorOpener::CloseDoor(float fDeltaTime)
+{
+	if (m_fCurrentLocalRotation <= 0.0f)
+	{
+		m_fCurrentLocalRotation = 0.0f;
+		return;
+	}
+
+	m_fCurrentLocalRotation -= m_fRotationPerSecond * fDeltaTime;
+	ApplyNewRotation();
+}
+
+void UDoorOpener::ApplyNewRotation()
+{
+	FRotator tRotator = m_pOwner->GetActorRotation();
+	tRotator.Yaw = m_fInitialYaw - m_fCurrentLocalRotation;
 	m_pOwner->SetActorRotation(tRotator.Quaternion());
 }
