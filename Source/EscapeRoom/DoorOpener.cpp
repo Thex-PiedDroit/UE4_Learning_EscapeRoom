@@ -19,8 +19,11 @@ void UDoorOpener::BeginPlay()
 	m_pOwner = GetOwner();
 	m_fInitialYaw = m_pOwner->GetActorRotation().Yaw;
 
-	m_pPressurePlate->OnActorBeginOverlap.AddDynamic(this, &UDoorOpener::AddOverlappingObject);
-	m_pPressurePlate->OnActorEndOverlap.AddDynamic(this, &UDoorOpener::RemoveOverlappingObject);
+	if (m_pPressurePlate != nullptr)
+	{
+		m_pPressurePlate->OnActorBeginOverlap.AddDynamic(this, &UDoorOpener::AddOverlappingObject);
+		m_pPressurePlate->OnActorEndOverlap.AddDynamic(this, &UDoorOpener::RemoveOverlappingObject);
+	}
 }
 
 void UDoorOpener::TickComponent(float fDeltaTime, ELevelTick eTickType, FActorComponentTickFunction* pThisTickFunction)
