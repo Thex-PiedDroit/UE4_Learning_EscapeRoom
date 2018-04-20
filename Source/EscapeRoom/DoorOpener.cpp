@@ -17,15 +17,17 @@ void UDoorOpener::BeginPlay()
 	Super::BeginPlay();
 
 	m_pOwner = GetOwner();
-	m_pActorAbleToOpenDoor = GetWorld()->GetFirstPlayerController()->GetPawn();
 	m_fInitialYaw = m_pOwner->GetActorRotation().Yaw;
+
+	m_pPressurePlate->OnActorBeginOverlap.AddDynamic(this, &UDoorOpener::AddOverlappingObject);
+	m_pPressurePlate->OnActorEndOverlap.AddDynamic(this, &UDoorOpener::RemoveOverlappingObject);
 }
 
 void UDoorOpener::TickComponent(float fDeltaTime, ELevelTick eTickType, FActorComponentTickFunction* pThisTickFunction)
 {
 	Super::TickComponent(fDeltaTime, eTickType, pThisTickFunction);
 
-	if (m_pPressurePlate->IsOverlappingActor(m_pActorAbleToOpenDoor))
+	if (m_ucOverlappingObjectsCount > 0)
 		OpenDoor(fDeltaTime);
 	else
 		CloseDoor(fDeltaTime);

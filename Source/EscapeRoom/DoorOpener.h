@@ -6,6 +6,7 @@
 #include "DoorOpener.generated.h"
 
 
+class AActor;
 class ATriggerVolume;
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
@@ -29,8 +30,12 @@ private:
 	void CloseDoor(float fDeltaTime);
 	void ApplyNewRotation();
 
+	UFUNCTION()
+	void AddOverlappingObject(AActor* pMe, AActor* pOther) { ++m_ucOverlappingObjectsCount; };
+	UFUNCTION()
+	void RemoveOverlappingObject(AActor* pMe, AActor* pOther) { --m_ucOverlappingObjectsCount; };
+
 	AActor* m_pOwner = nullptr;
-	AActor* m_pActorAbleToOpenDoor = nullptr;
 
 	UPROPERTY(EditAnywhere)
 	ATriggerVolume* m_pPressurePlate = nullptr;
@@ -40,4 +45,6 @@ private:
 
 	float m_fInitialYaw = 0.0f;
 	float m_fCurrentLocalRotation = 0.0f;
+
+	unsigned char m_ucOverlappingObjectsCount = 0;
 };
