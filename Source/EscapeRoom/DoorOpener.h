@@ -9,6 +9,9 @@
 class AActor;
 class ATriggerVolume;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDoorOpenRequest);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDoorCloseRequest);
+
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class ESCAPEROOM_API UDoorOpener : public UActorComponent
 {
@@ -26,25 +29,24 @@ protected:
 
 private:
 
-	void OpenDoor(float fDeltaTime);
-	void CloseDoor(float fDeltaTime);
-	void ApplyNewRotation();
-
 	UFUNCTION()
-	void AddOverlappingObject(AActor* pMe, AActor* pOther) { ++m_ucOverlappingObjectsCount; };
+	void AddOverlappingObject(AActor* pMe, AActor* pOther);
 	UFUNCTION()
-	void RemoveOverlappingObject(AActor* pMe, AActor* pOther) { --m_ucOverlappingObjectsCount; };
+	void RemoveOverlappingObject(AActor* pMe, AActor* pOther);
 
 	AActor* m_pOwner = nullptr;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnDoorOpenRequest OnDoorOpenRequest;
+	UPROPERTY(BlueprintAssignable)
+	FOnDoorCloseRequest OnDoorCloseRequest;
 
 	UPROPERTY(EditAnywhere)
 	ATriggerVolume* m_pPressurePlate = nullptr;
 
-	UPROPERTY(EditAnywhere)
-	float m_fRotationPerSecond = 90.0f;
-
-	float m_fInitialYaw = 0.0f;
-	float m_fCurrentLocalRotation = 0.0f;
+	FRotator m_tInitialRotation = FRotator();
+	UFUNCTION(BlueprintPure)
+	FRotator GetInitialRotation() const { return m_tInitialRotation; };
 
 	unsigned char m_ucOverlappingObjectsCount = 0;
 };
